@@ -287,6 +287,31 @@ $($appSettings -join "`r`n")
     Set-Content -LiteralPath (Join-Path $ReleasePath "web.config") -Value $xml -Encoding UTF8
 }
 
+function Write-StaticDirectoryWebConfig {
+    param([string]$DirectoryPath)
+
+    New-Item -ItemType Directory -Force -Path $DirectoryPath | Out-Null
+
+    $xml = @"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <system.webServer>
+    <handlers>
+      <clear />
+      <add name="StaticFile"
+           path="*"
+           verb="GET,HEAD"
+           modules="StaticFileModule"
+           resourceType="File"
+           requireAccess="Read" />
+    </handlers>
+  </system.webServer>
+</configuration>
+"@
+
+    Set-Content -LiteralPath (Join-Path $DirectoryPath "web.config") -Value $xml -Encoding UTF8
+}
+
 function Ensure-FastCgiRegistration {
     param(
         [string]$VenvPython,
@@ -454,6 +479,10 @@ finally {
     Pop-Location
 }
 
+Write-Step "Writing static IIS web.config files"
+Write-StaticDirectoryWebConfig -DirectoryPath (Join-Path $releasePath "static")
+Write-StaticDirectoryWebConfig -DirectoryPath (Join-Path $releasePath "media")
+
 Write-Step "Writing IIS web.config"
 Write-WebConfig -ReleasePath $releasePath -VenvPython $venvPython -WFastCgi $wfastcgi -EnvValues $envValues
 
@@ -482,6 +511,14 @@ Start-Sleep -Seconds 3
 Write-Step "Health check"
 $response = Invoke-WebRequest -Uri "http://127.0.0.1:$HttpPort/" -Headers @{ Host = $HostHeader } -UseBasicParsing -TimeoutSec 30
 Write-Host "Health check status: $($response.StatusCode)"
+
+Write-Step "Static file health check"
+$staticProbe = Join-Path $current "static\css\style.css"
+if (-not (Test-Path -LiteralPath $staticProbe)) {
+    throw "Expected static probe file is missing: $staticProbe"
+}
+$staticResponse = Invoke-WebRequest -Uri "http://127.0.0.1:$HttpPort/static/css/style.css" -Headers @{ Host = $HostHeader } -UseBasicParsing -TimeoutSec 30
+Write-Host "Static health check status: $($staticResponse.StatusCode)"
 
 Write-Step "Pruning old releases"
 Prune-Releases
