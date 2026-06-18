@@ -284,7 +284,11 @@ function Ensure-FastCgiRegistration {
     $appCmd = Join-Path $env:windir "system32\inetsrv\appcmd.exe"
     $config = & $appCmd list config /section:system.webServer/fastCgi
     if ($config -notmatch [regex]::Escape($VenvPython)) {
-        & $appCmd set config /section:system.webServer/fastCgi /+"[fullPath='$VenvPython',arguments='$WFastCgi']" /commit:apphost
+        $output = & $appCmd set config /section:system.webServer/fastCgi /+"[fullPath='$VenvPython',arguments='$WFastCgi']" /commit:apphost 2>&1
+        if ($LASTEXITCODE -ne 0 -and (($output | Out-String) -notmatch "duplicate collection entry")) {
+            $output | Write-Host
+            throw "Failed to register FastCGI application."
+        }
     }
 }
 
@@ -316,8 +320,14 @@ function Switch-CurrentRelease {
     param([string]$ReleasePath)
 
     $current = Join-Path $DeployRoot "current"
-    if (Test-Path $current) {
-        Remove-Item -LiteralPath $current -Force
+    $currentItem = Get-Item -LiteralPath $current -Force -ErrorAction SilentlyContinue
+    if ($currentItem) {
+        if ($currentItem.PSIsContainer) {
+            cmd /c rmdir "$current" | Out-Null
+        }
+        else {
+            Remove-Item -LiteralPath $current -Force
+        }
     }
 
     cmd /c mklink /J "$current" "$ReleasePath" | Out-Null
