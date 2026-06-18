@@ -28,13 +28,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 #RECAPTCHA_PRIVATE_KEY = '6LcQg8QsAAAAANdKdlvPny26cW7eW7c45KueSdVa'
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'f2zx8*lb*em*-*b+!&1lpp&$_9q9kmkar+l3x90do@s(+sr&x7'  # Consider using your secret key
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'f2zx8*lb*em*-*b+!&1lpp&$_9q9kmkar+l3x90do@s(+sr&x7'
+)  # Consider using your secret key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG =True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
 # ALLOWED_HOSTS = ['smswithdjango.herokuapp.com']
-ALLOWED_HOSTS = []  # Not recommended but useful in dev mode
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')
+    if host.strip()
+]  # Not recommended but useful in dev mode
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
 
 
  
@@ -52,6 +65,8 @@ INSTALLED_APPS = [
     # My Apps
     'main_app.apps.MainAppConfig'
 ]
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

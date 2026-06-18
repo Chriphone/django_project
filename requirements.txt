@@ -22,3 +22,4 @@ tzdata==2026.2
 urllib3==2.6.3
 virtualenv==20.0.31
 whitenoise==5.2.0
+wfastcgi==3.0.0
