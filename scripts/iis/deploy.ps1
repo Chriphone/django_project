@@ -316,6 +316,19 @@ function Ensure-IisSite {
     & $appCmd set app "$SiteName/" /applicationPool:$AppPoolName
 }
 
+function Grant-AppPoolFilesystemAccess {
+    param([string[]]$WritablePaths)
+
+    $identity = "IIS AppPool\$AppPoolName"
+    foreach ($path in $WritablePaths) {
+        New-Item -ItemType Directory -Force -Path $path | Out-Null
+        & icacls $path /grant "${identity}:(OI)(CI)M" /T | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to grant $identity modify access to $path."
+        }
+    }
+}
+
 function Switch-CurrentRelease {
     param([string]$ReleasePath)
 
@@ -440,6 +453,9 @@ $current = Switch-CurrentRelease -ReleasePath $releasePath
 
 Write-Step "Configuring IIS site"
 Ensure-IisSite -PhysicalPath $current
+
+Write-Step "Granting app pool filesystem access"
+Grant-AppPoolFilesystemAccess -WritablePaths @($logs, $sharedMedia)
 
 Write-Step "Starting app pool and site"
 & $appCmd start apppool $AppPoolName 2>$null | Out-Null
