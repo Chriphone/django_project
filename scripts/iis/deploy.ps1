@@ -149,7 +149,8 @@ function Read-EnvFile {
         }
 
         $parts = $trimmed.Split("=", 2)
-        $values[$parts[0].Trim()] = $parts[1].Trim()
+        $key = $parts[0].Trim().TrimStart([char]0xFEFF)
+        $values[$key] = $parts[1].Trim()
     }
 
     if (-not $values.ContainsKey("DJANGO_DEBUG")) {
@@ -195,23 +196,30 @@ url = urlparse(os.environ["DATABASE_URL"])
 db_name = url.path.lstrip("/")
 if not db_name:
     raise SystemExit("DATABASE_URL has no database name")
+quote = chr(96)
+escaped_db_name = db_name.replace(quote, quote + quote)
 conn = MySQLdb.connect(
     host=url.hostname or "127.0.0.1",
     port=url.port or 3306,
     user=unquote(url.username or "root"),
     passwd=unquote(url.password or ""),
+    connect_timeout=15,
 )
 cur = conn.cursor()
-cur.execute("CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(db_name.replace("`", "``")))
+cur.execute("CREATE DATABASE IF NOT EXISTS {0}{1}{0} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(quote, escaped_db_name))
 conn.commit()
 cur.close()
 conn.close()
+print("Database bootstrap complete: {}".format(db_name))
 "@
 
     $tmp = [System.IO.Path]::GetTempFileName() + ".py"
     Set-Content -LiteralPath $tmp -Value $script -Encoding UTF8
     try {
         & $PythonExe $tmp
+        if ($LASTEXITCODE -ne 0) {
+            throw "Database bootstrap failed with exit code $LASTEXITCODE."
+        }
     }
     finally {
         Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
