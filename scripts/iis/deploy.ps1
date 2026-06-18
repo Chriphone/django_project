@@ -57,19 +57,45 @@ function Ensure-WindowsFeature {
     }
 }
 
-function Get-Python312 {
+function Find-Python312 {
     $py = Get-Command py -ErrorAction SilentlyContinue
     if ($py) {
         $path = (& py -3.12 -c "import sys; print(sys.executable)" 2>$null)
         if ($LASTEXITCODE -eq 0 -and $path) {
             return $path.Trim()
         }
+    }
 
+    $candidates = @(
+        (Join-Path $env:ProgramFiles "Python312\python.exe"),
+        (Join-Path ${env:ProgramFiles(x86)} "Python312\python.exe"),
+        (Join-Path $env:LocalAppData "Programs\Python\Python312\python.exe")
+    )
+
+    foreach ($candidate in $candidates) {
+        if ($candidate -and (Test-Path $candidate)) {
+            $version = (& $candidate -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>$null)
+            if ($LASTEXITCODE -eq 0 -and $version.Trim() -eq "3.12") {
+                return $candidate
+            }
+        }
+    }
+
+    return $null
+}
+
+function Get-Python312 {
+    $path = Find-Python312
+    if ($path) {
+        return $path
+    }
+
+    if (Get-Command py -ErrorAction SilentlyContinue) {
         Write-Step "Python 3.12 not found through py; attempting py install"
         & py install -y 3.12 | Write-Host
-        $path = (& py -3.12 -c "import sys; print(sys.executable)" 2>$null)
-        if ($LASTEXITCODE -eq 0 -and $path) {
-            return $path.Trim()
+        $path = Find-Python312
+        if ($path) {
+            return $path
         }
     }
 
@@ -77,10 +103,24 @@ function Get-Python312 {
     if ($winget) {
         Write-Step "Python 3.12 not found; attempting winget install"
         & winget install --id Python.Python.3.12 -e --silent --accept-source-agreements --accept-package-agreements | Write-Host
-        $path = (& py -3.12 -c "import sys; print(sys.executable)" 2>$null)
-        if ($LASTEXITCODE -eq 0 -and $path) {
-            return $path.Trim()
+        $path = Find-Python312
+        if ($path) {
+            return $path
         }
+    }
+
+    Write-Step "Python 3.12 not found; attempting python.org installer"
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    $installer = Join-Path $env:TEMP "python-3.12.10-amd64.exe"
+    Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe" -OutFile $installer -UseBasicParsing
+    $process = Start-Process -FilePath $installer -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1 Include_launcher=1 Include_pip=1" -Wait -PassThru
+    if ($process.ExitCode -notin @(0, 3010)) {
+        throw "Python installer failed with exit code $($process.ExitCode)."
+    }
+
+    $path = Find-Python312
+    if ($path) {
+        return $path
     }
 
     throw "Python 3.12 is required and could not be installed automatically. Install Python 3.12 or Python Install Manager, then rerun."
