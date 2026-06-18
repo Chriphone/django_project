@@ -8,14 +8,12 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.views.decorators.csrf import csrf_exempt
 import dj_database_url
-from django.shortcuts import render, redirect
 from .forms import RegisterForm
-from django.contrib.auth.models import User
 
 
 
 from .EmailBackend import EmailBackend
-from .models import Attendance, Session, Subject
+from .models import Attendance, CustomUser, Session, Student, Subject
 
 #Create your views here.
 def home(request):
@@ -44,7 +42,28 @@ def login_page(request):
         },
     )
 def register_page(request):
-    return render(request,'main_app/homepage/register.html')
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            full_name = form.cleaned_data['username'].strip()
+            name_parts = full_name.split(maxsplit=1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ""
+            user = CustomUser.objects.create_user(
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password'],
+                first_name=first_name,
+                last_name=last_name,
+                user_type='3',
+                gender='M',
+                address='',
+            )
+            Student.objects.get_or_create(admin=user)
+            return redirect('/login/')
+    else:
+        form = RegisterForm()
+
+    return render(request, 'main_app/homepage/register.html', {'form': form})
 
 def doLogin(request, **kwargs):
     if request.method != 'POST':
@@ -72,10 +91,10 @@ def doLogin(request, **kwargs):
     else:
         messages.error(request, "Invalid details")
         # Replace with your named URL pattern (e.g., 'login') or keep the template path
-        return redirect("main_app/login.html") 
+        return redirect("login_page")
         
     # Final fallback return to ensure the view never returns None
-    return redirect("main_app/login.html")
+    return redirect("login_page")
     
 
 def logout_user(request):
@@ -143,16 +162,4 @@ messaging.setBackgroundMessageHandler(function (payload) {
     return HttpResponse(data, content_type='application/javascript')
 
 def register(request):
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = User.objects.create_user(
-                username=form.cleaned_data['username'],
-                email=form.cleaned_data['email'],
-                password=form.cleaned_data['password']
-            )
-            return redirect('login')  # make sure login url exists
-    else:
-        form = RegisterForm()
-
-    return render(request, 'register.html', {'form': form})
+    return register_page(request)

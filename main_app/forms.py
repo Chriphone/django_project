@@ -4,7 +4,6 @@ from django.forms.widgets import DateInput, TextInput
 from .models import *
 
 from django import forms
-from django.contrib.auth.models import User
 
 
 class FormSettings(forms.ModelForm):
@@ -193,14 +192,21 @@ class EditResultForm(FormSettings):
         model = StudentResult
         fields = ['session_year', 'subject', 'student', 'test', 'exam']
 
-#Registration form 
-class RegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
-    confirm_password = forms.CharField(widget=forms.PasswordInput)
+# Registration form
+class RegisterForm(forms.Form):
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
+    def clean_email(self):
+        email = self.cleaned_data['email'].lower()
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("The given email is already registered")
+        return email
 
     def clean(self):
         cleaned_data = super().clean()
@@ -209,6 +215,5 @@ class RegisterForm(forms.ModelForm):
 
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match")
-            #confirm_password = forms.CharField(
-   # widget=forms.PasswordInput(attrs={'class': 'form-control'})
-#)
+
+        return cleaned_data

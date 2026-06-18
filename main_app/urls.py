@@ -8,6 +8,7 @@ from . import hod_views, staff_views, student_views, views
 urlpatterns = [
     path("", views.home, name='home'),
     path("homes", views.homes, name='homes'),
+    path("login/", views.login_page, name='login'),
     path("login_page", views.login_page, name='login_page'),
     path("register_pages/", views.register_page, name='register_pages'),
     path("get_attendance", views.get_attendance, name='get_attendance'),

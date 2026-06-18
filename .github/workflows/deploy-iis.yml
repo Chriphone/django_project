@@ -53,12 +53,16 @@ jobs:
           if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
           New-Item -ItemType Directory -Force -Path $staging | Out-Null
 
-          robocopy . $staging /E /XD .git .venv venv env docs media dist __pycache__ /XF "*.pyc" | Out-Null
+          robocopy . $staging /E /XD .git .venv venv env docs media __pycache__ /XF "*.pyc" | Out-Null
           if ($LASTEXITCODE -gt 7) { exit $LASTEXITCODE }
           $global:LASTEXITCODE = 0
           $rootStatic = Join-Path $staging "static"
           if (Test-Path $rootStatic) {
             Remove-Item -LiteralPath $rootStatic -Recurse -Force
+          }
+          $rootDist = Join-Path $staging "dist"
+          if (Test-Path $rootDist) {
+            Remove-Item -LiteralPath $rootDist -Recurse -Force
           }
 
           Compress-Archive -Path (Join-Path $staging "*") -DestinationPath $artifact -Force
@@ -272,7 +276,9 @@ jobs:
           $checks = @(
             "$httpsBaseUrl/",
             "$httpsBaseUrl/login_page",
-            "$httpsBaseUrl/static/css/style.css"
+            "$httpsBaseUrl/static/css/style.css",
+            "$httpsBaseUrl/static/dist/css/adminlte.min.css",
+            "$httpsBaseUrl/static/dist/js/adminlte.min.js"
           )
 
           foreach ($uri in $checks) {

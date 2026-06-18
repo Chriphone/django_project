@@ -521,12 +521,26 @@ $response = Invoke-WebRequest -Uri "http://127.0.0.1:$HttpPort/" -Headers @{ Hos
 Write-Host "Health check status: $($response.StatusCode)"
 
 Write-Step "Static file health check"
-$staticProbe = Join-Path $current "static\css\style.css"
-if (-not (Test-Path -LiteralPath $staticProbe)) {
-    throw "Expected static probe file is missing: $staticProbe"
+$staticProbes = @(
+    "static\css\style.css",
+    "static\dist\css\adminlte.min.css",
+    "static\dist\js\adminlte.min.js"
+)
+foreach ($relativeProbe in $staticProbes) {
+    $staticProbe = Join-Path $current $relativeProbe
+    if (-not (Test-Path -LiteralPath $staticProbe)) {
+        throw "Expected static probe file is missing: $staticProbe"
+    }
 }
-$staticResponse = Invoke-WebRequest -Uri "http://127.0.0.1:$HttpPort/static/css/style.css" -Headers @{ Host = $HostHeader } -UseBasicParsing -TimeoutSec 30
-Write-Host "Static health check status: $($staticResponse.StatusCode)"
+$staticUrls = @(
+    "http://127.0.0.1:$HttpPort/static/css/style.css",
+    "http://127.0.0.1:$HttpPort/static/dist/css/adminlte.min.css",
+    "http://127.0.0.1:$HttpPort/static/dist/js/adminlte.min.js"
+)
+foreach ($staticUrl in $staticUrls) {
+    $staticResponse = Invoke-WebRequest -Uri $staticUrl -Headers @{ Host = $HostHeader } -UseBasicParsing -TimeoutSec 30
+    Write-Host "Static health check status: $($staticResponse.StatusCode) $staticUrl"
+}
 
 Write-Step "Pruning old releases"
 Prune-Releases
