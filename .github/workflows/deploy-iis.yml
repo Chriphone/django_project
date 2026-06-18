@@ -93,7 +93,7 @@ jobs:
           Set-Content -Path "$HOME\.ssh\known_hosts" -Value @'
           ${{ secrets.IIS_SSH_KNOWN_HOSTS }}
           '@
-          icacls "$HOME\.ssh\id_ed25519" /inheritance:r /grant:r "$env:USERNAME:R"
+          icacls "$HOME\.ssh\id_ed25519" /inheritance:r /grant:r "$($env:USERNAME):R"
 
       - name: Copy artifact and deploy script
         shell: pwsh
