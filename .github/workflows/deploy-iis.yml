@@ -102,24 +102,49 @@ jobs:
           SSH_PORT: ${{ secrets.IIS_SSH_PORT }}
           SSH_USER: ${{ secrets.IIS_SSH_USER }}
           REMOTE_CONFIG_PATH: ${{ vars.IIS_SERVER_CONFIG_PATH }}
+          DATABASE_URL: ${{ secrets.IIS_DATABASE_URL }}
+          HOST_HEADER: ${{ vars.IIS_HOST_HEADER }}
         run: |
-          $remoteDeployDir = Split-Path "${env:REMOTE_CONFIG_PATH}" -Parent
-
-          function Copy-RemoteFile {
-            param(
-              [Parameter(Mandatory = $true)][string]$LocalPath,
-              [Parameter(Mandatory = $true)][string]$RemotePath
-            )
-
-            $remoteDir = Split-Path $RemotePath -Parent
-            $bytes = [System.IO.File]::ReadAllBytes((Resolve-Path $LocalPath))
-            $payload = [Convert]::ToBase64String($bytes)
-            $remoteCommand = "powershell -NoProfile -Command ""`$payload = [Console]::In.ReadToEnd(); New-Item -ItemType Directory -Force -Path '$remoteDir' | Out-Null; [System.IO.File]::WriteAllBytes('$RemotePath', [Convert]::FromBase64String(`$payload))"""
-            $payload | ssh -i "$HOME\.ssh\id_ed25519" -p $env:SSH_PORT -o StrictHostKeyChecking=yes "$env:SSH_USER@$env:SSH_HOST" $remoteCommand
+          if ([string]::IsNullOrWhiteSpace($env:DATABASE_URL)) {
+            throw "IIS_DATABASE_URL secret is required."
           }
 
-          Copy-RemoteFile -LocalPath "dist\kvtc-release.zip" -RemotePath "$remoteDeployDir\kvtc-release.zip"
-          Copy-RemoteFile -LocalPath "scripts\iis\deploy.ps1" -RemotePath "$remoteDeployDir\deploy.ps1"
+          $remoteDeployDir = Split-Path "${env:REMOTE_CONFIG_PATH}" -Parent
+
+          function ConvertTo-SftpPath {
+            param([Parameter(Mandatory = $true)][string]$Path)
+
+            $normalized = $Path -replace "\\", "/"
+            if ($normalized -match "^[A-Za-z]:/") {
+              return "/$normalized"
+            }
+
+            return $normalized
+          }
+
+          $remoteCommand = "powershell -NoProfile -Command ""New-Item -ItemType Directory -Force -Path '$remoteDeployDir' | Out-Null"""
+          ssh -i "$HOME\.ssh\id_ed25519" -p $env:SSH_PORT -o StrictHostKeyChecking=yes "$env:SSH_USER@$env:SSH_HOST" $remoteCommand
+
+          $serverEnvPath = Join-Path $env:RUNNER_TEMP "kvtc-server.env"
+          @(
+            "DATABASE_URL=$env:DATABASE_URL",
+            "DJANGO_DEBUG=True",
+            "DJANGO_ALLOWED_HOSTS=$env:HOST_HEADER,localhost,127.0.0.1",
+            "DJANGO_CSRF_TRUSTED_ORIGINS=http://$env:HOST_HEADER,https://$env:HOST_HEADER",
+            "EMAIL_ADDRESS=",
+            "EMAIL_PASSWORD="
+          ) | Set-Content -LiteralPath $serverEnvPath -Encoding UTF8
+
+          $remoteSftpDir = ConvertTo-SftpPath $remoteDeployDir
+          $remoteConfigPath = ConvertTo-SftpPath $env:REMOTE_CONFIG_PATH
+          $batchFile = Join-Path $env:RUNNER_TEMP "kvtc-sftp.batch"
+          @(
+            "put `"dist/kvtc-release.zip`" `"$remoteSftpDir/kvtc-release.zip`"",
+            "put `"scripts/iis/deploy.ps1`" `"$remoteSftpDir/deploy.ps1`"",
+            "put `"$($serverEnvPath -replace "\\", "/")`" `"$remoteConfigPath`""
+          ) | Set-Content -LiteralPath $batchFile -Encoding ASCII
+
+          sftp -i "$HOME\.ssh\id_ed25519" -P $env:SSH_PORT -o StrictHostKeyChecking=yes -b $batchFile "$env:SSH_USER@$env:SSH_HOST"
 
       - name: Run remote deployment
         shell: pwsh
