@@ -85,11 +85,18 @@ jobs:
 
       - name: Prepare SSH
         shell: pwsh
+        env:
+          SSH_PRIVATE_KEY_B64: ${{ secrets.IIS_SSH_PRIVATE_KEY_B64 }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:SSH_PRIVATE_KEY_B64)) {
+            throw "IIS_SSH_PRIVATE_KEY_B64 secret is required."
+          }
+
           New-Item -ItemType Directory -Force -Path "$HOME\.ssh" | Out-Null
-          Set-Content -Path "$HOME\.ssh\id_ed25519" -Value @'
-          ${{ secrets.IIS_SSH_PRIVATE_KEY }}
-          '@ -NoNewline
+          [System.IO.File]::WriteAllBytes(
+            "$HOME\.ssh\id_ed25519",
+            [Convert]::FromBase64String($env:SSH_PRIVATE_KEY_B64)
+          )
           Set-Content -Path "$HOME\.ssh\known_hosts" -Value @'
           ${{ secrets.IIS_SSH_KNOWN_HOSTS }}
           '@
