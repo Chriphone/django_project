@@ -1,0 +1,280 @@
+name: Deploy IIS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - frank
+
+concurrency:
+  group: iis-${{ vars.IIS_SITE_NAME || 'kvtc' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build artifact
+    runs-on: windows-latest
+    env:
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,kvtc.kmet.co.ke
+      DJANGO_CSRF_TRUSTED_ORIGINS: http://kvtc.kmet.co.ke,https://kvtc.kmet.co.ke
+      DATABASE_URL: sqlite:///ci.sqlite3
+      EMAIL_ADDRESS: ci@example.invalid
+      EMAIL_PASSWORD: ci-placeholder
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Django checks
+        shell: pwsh
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+          python manage.py test
+
+      - name: Package artifact
+        shell: pwsh
+        run: |
+          $staging = Join-Path $env:RUNNER_TEMP "kvtc-artifact"
+          $artifact = Join-Path $env:RUNNER_TEMP "kvtc-${{ github.sha }}.zip"
+          if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
+          New-Item -ItemType Directory -Force -Path $staging | Out-Null
+
+          robocopy . $staging /E /XD .git .venv venv env docs media dist __pycache__ /XF "*.pyc" | Out-Null
+          if ($LASTEXITCODE -gt 7) { exit $LASTEXITCODE }
+          $global:LASTEXITCODE = 0
+          $rootStatic = Join-Path $staging "static"
+          if (Test-Path $rootStatic) {
+            Remove-Item -LiteralPath $rootStatic -Recurse -Force
+          }
+
+          Compress-Archive -Path (Join-Path $staging "*") -DestinationPath $artifact -Force
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item $artifact "dist\kvtc-release.zip" -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kvtc-release
+          path: dist/kvtc-release.zip
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy to IIS
+    runs-on: windows-latest
+    needs: build
+    environment: PRODUCTION
+    steps:
+      - name: Checkout deployment scripts
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kvtc-release
+          path: dist
+
+      - name: Prepare SSH
+        shell: pwsh
+        env:
+          SSH_PRIVATE_KEY_B64: ${{ secrets.IIS_SSH_PRIVATE_KEY_B64 }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:SSH_PRIVATE_KEY_B64)) {
+            throw "IIS_SSH_PRIVATE_KEY_B64 secret is required."
+          }
+
+          New-Item -ItemType Directory -Force -Path "$HOME\.ssh" | Out-Null
+          [System.IO.File]::WriteAllBytes(
+            "$HOME\.ssh\id_ed25519",
+            [Convert]::FromBase64String($env:SSH_PRIVATE_KEY_B64)
+          )
+          Set-Content -Path "$HOME\.ssh\known_hosts" -Value @'
+          ${{ secrets.IIS_SSH_KNOWN_HOSTS }}
+          '@
+          icacls "$HOME\.ssh\id_ed25519" /inheritance:r /grant:r "$($env:USERNAME):R"
+
+      - name: Copy artifact and deploy script
+        shell: pwsh
+        env:
+          SSH_HOST: ${{ secrets.IIS_SSH_HOST }}
+          SSH_PORT: ${{ secrets.IIS_SSH_PORT }}
+          SSH_USER: ${{ secrets.IIS_SSH_USER }}
+          REMOTE_CONFIG_PATH: ${{ vars.IIS_SERVER_CONFIG_PATH }}
+          DATABASE_URL: ${{ secrets.IIS_DATABASE_URL }}
+          HOST_HEADER: ${{ vars.IIS_HOST_HEADER }}
+          PUBLIC_HTTPS_PORT: ${{ vars.IIS_PUBLIC_HTTPS_PORT }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:DATABASE_URL)) {
+            throw "IIS_DATABASE_URL secret is required."
+          }
+
+          $remoteDeployDir = Split-Path "${env:REMOTE_CONFIG_PATH}" -Parent
+          $sshOptions = @(
+            "-i", "$HOME\.ssh\id_ed25519",
+            "-p", $env:SSH_PORT,
+            "-o", "StrictHostKeyChecking=yes",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=30",
+            "-o", "ServerAliveInterval=15",
+            "-o", "ServerAliveCountMax=2"
+          )
+          $sftpOptions = @(
+            "-i", "$HOME\.ssh\id_ed25519",
+            "-P", $env:SSH_PORT,
+            "-o", "StrictHostKeyChecking=yes",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=30",
+            "-o", "ServerAliveInterval=15",
+            "-o", "ServerAliveCountMax=2"
+          )
+
+          function ConvertTo-SftpPath {
+            param([Parameter(Mandatory = $true)][string]$Path)
+
+            $normalized = $Path -replace "\\", "/"
+            if ($normalized -match "^[A-Za-z]:/") {
+              return "/$normalized"
+            }
+
+            return $normalized
+          }
+
+          $remoteCommand = "powershell -NoProfile -Command ""New-Item -ItemType Directory -Force -Path '$remoteDeployDir' | Out-Null"""
+          ssh @sshOptions "$env:SSH_USER@$env:SSH_HOST" $remoteCommand
+
+          $csrfOrigins = @(
+            "http://$env:HOST_HEADER",
+            "https://$env:HOST_HEADER"
+          )
+          if (-not [string]::IsNullOrWhiteSpace($env:PUBLIC_HTTPS_PORT) -and $env:PUBLIC_HTTPS_PORT -ne "443") {
+            $csrfOrigins += ("https://{0}:{1}" -f $env:HOST_HEADER, $env:PUBLIC_HTTPS_PORT)
+          }
+          $httpsRedirectHost = if (-not [string]::IsNullOrWhiteSpace($env:PUBLIC_HTTPS_PORT) -and $env:PUBLIC_HTTPS_PORT -ne "443") {
+            "{0}:{1}" -f $env:HOST_HEADER, $env:PUBLIC_HTTPS_PORT
+          } else {
+            $env:HOST_HEADER
+          }
+
+          $serverEnvPath = Join-Path $env:RUNNER_TEMP "kvtc-server.env"
+          @(
+            "DATABASE_URL=$env:DATABASE_URL",
+            "DJANGO_DEBUG=False",
+            "DJANGO_ALLOWED_HOSTS=$env:HOST_HEADER,localhost,127.0.0.1",
+            "DJANGO_CSRF_TRUSTED_ORIGINS=$($csrfOrigins -join ',')",
+            "DJANGO_HTTPS_REDIRECT=True",
+            "DJANGO_HTTPS_REDIRECT_HOST=$httpsRedirectHost",
+            "EMAIL_ADDRESS=",
+            "EMAIL_PASSWORD="
+          ) | Set-Content -LiteralPath $serverEnvPath -Encoding UTF8
+
+          $remoteSftpDir = ConvertTo-SftpPath $remoteDeployDir
+          $remoteConfigPath = ConvertTo-SftpPath $env:REMOTE_CONFIG_PATH
+          $batchFile = Join-Path $env:RUNNER_TEMP "kvtc-sftp.batch"
+          @(
+            "put `"dist/kvtc-release.zip`" `"$remoteSftpDir/kvtc-release.zip`"",
+            "put `"scripts/iis/deploy.ps1`" `"$remoteSftpDir/deploy.ps1`"",
+            "put `"$($serverEnvPath -replace "\\", "/")`" `"$remoteConfigPath`""
+          ) | Set-Content -LiteralPath $batchFile -Encoding ASCII
+
+          sftp @sftpOptions -b $batchFile "$env:SSH_USER@$env:SSH_HOST"
+
+      - name: Run remote deployment
+        shell: pwsh
+        env:
+          SSH_HOST: ${{ secrets.IIS_SSH_HOST }}
+          SSH_PORT: ${{ secrets.IIS_SSH_PORT }}
+          SSH_USER: ${{ secrets.IIS_SSH_USER }}
+          SITE_NAME: ${{ vars.IIS_SITE_NAME }}
+          APP_POOL_NAME: ${{ vars.IIS_APP_POOL_NAME }}
+          DEPLOY_ROOT: ${{ vars.IIS_DEPLOY_ROOT }}
+          HOST_HEADER: ${{ vars.IIS_HOST_HEADER }}
+          HTTP_PORT: ${{ vars.IIS_HTTP_PORT }}
+          CONFIG_PATH: ${{ vars.IIS_SERVER_CONFIG_PATH }}
+          KEEP_RELEASES: ${{ vars.IIS_KEEP_RELEASES }}
+        run: |
+          $remoteDeployDir = Split-Path "${env:CONFIG_PATH}" -Parent
+          $releaseId = "${{ github.run_number }}-${{ github.run_attempt }}-${{ github.sha }}"
+          $sshOptions = @(
+            "-i", "$HOME\.ssh\id_ed25519",
+            "-p", $env:SSH_PORT,
+            "-o", "StrictHostKeyChecking=yes",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=30",
+            "-o", "ServerAliveInterval=15",
+            "-o", "ServerAliveCountMax=2"
+          )
+          $remoteScript = @(
+            "& '$remoteDeployDir\deploy.ps1'",
+            "-ArtifactPath '$remoteDeployDir\kvtc-release.zip'",
+            "-ReleaseId '$releaseId'",
+            "-SiteName '$env:SITE_NAME'",
+            "-AppPoolName '$env:APP_POOL_NAME'",
+            "-DeployRoot '$env:DEPLOY_ROOT'",
+            "-HostHeader '$env:HOST_HEADER'",
+            "-HttpPort $env:HTTP_PORT",
+            "-ConfigPath '$env:CONFIG_PATH'",
+            "-KeepReleases $env:KEEP_RELEASES"
+          ) -join " "
+          $encodedCommand = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($remoteScript))
+          $cmd = "powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand $encodedCommand"
+
+          ssh @sshOptions "$env:SSH_USER@$env:SSH_HOST" $cmd
+
+      - name: Validate public site
+        shell: pwsh
+        env:
+          HOST_HEADER: ${{ vars.IIS_HOST_HEADER }}
+          PUBLIC_HTTPS_PORT: ${{ vars.IIS_PUBLIC_HTTPS_PORT }}
+        run: |
+          $httpsPort = $env:PUBLIC_HTTPS_PORT
+          if ([string]::IsNullOrWhiteSpace($httpsPort)) {
+            $httpsPort = "443"
+          }
+
+          $httpsBaseUrl = if ($httpsPort -eq "443") {
+            "https://$env:HOST_HEADER"
+          } else {
+            "https://{0}:{1}" -f $env:HOST_HEADER, $httpsPort
+          }
+
+          $handler = [System.Net.Http.HttpClientHandler]::new()
+          $handler.AllowAutoRedirect = $false
+          $client = [System.Net.Http.HttpClient]::new($handler)
+          $client.Timeout = [TimeSpan]::FromSeconds(30)
+          $httpResponse = $client.GetAsync("http://$env:HOST_HEADER/").GetAwaiter().GetResult()
+          $httpStatus = [int]$httpResponse.StatusCode
+          $locationHeader = [string]$httpResponse.Headers.Location
+          $client.Dispose()
+          $handler.Dispose()
+
+          if ($httpStatus -notin 301, 302, 308) {
+            throw "Expected HTTP redirect from http://$env:HOST_HEADER/, got $httpStatus."
+          }
+          if ($locationHeader -notlike "$httpsBaseUrl/*") {
+            throw "Expected HTTP redirect to $httpsBaseUrl/, got $locationHeader."
+          }
+          Write-Host "http://$env:HOST_HEADER/ -> $httpStatus $locationHeader"
+
+          $checks = @(
+            "$httpsBaseUrl/",
+            "$httpsBaseUrl/login_page",
+            "$httpsBaseUrl/static/css/style.css"
+          )
+
+          foreach ($uri in $checks) {
+            $response = Invoke-WebRequest -Uri $uri -UseBasicParsing -TimeoutSec 30
+            Write-Host "$uri -> $($response.StatusCode)"
+          }
