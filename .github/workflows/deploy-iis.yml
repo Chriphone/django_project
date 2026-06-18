@@ -104,10 +104,22 @@ jobs:
           REMOTE_CONFIG_PATH: ${{ vars.IIS_SERVER_CONFIG_PATH }}
         run: |
           $remoteDeployDir = Split-Path "${env:REMOTE_CONFIG_PATH}" -Parent
-          $remoteScpDir = $remoteDeployDir -replace '\\', '/'
-          ssh -i "$HOME\.ssh\id_ed25519" -p $env:SSH_PORT -o StrictHostKeyChecking=yes "$env:SSH_USER@$env:SSH_HOST" "powershell -NoProfile -Command `"New-Item -ItemType Directory -Force -Path '$remoteDeployDir' | Out-Null`""
-          scp -i "$HOME\.ssh\id_ed25519" -P $env:SSH_PORT -o StrictHostKeyChecking=yes "dist\kvtc-release.zip" "${env:SSH_USER}@${env:SSH_HOST}:$remoteScpDir/kvtc-release.zip"
-          scp -i "$HOME\.ssh\id_ed25519" -P $env:SSH_PORT -o StrictHostKeyChecking=yes "scripts\iis\deploy.ps1" "${env:SSH_USER}@${env:SSH_HOST}:$remoteScpDir/deploy.ps1"
+
+          function Copy-RemoteFile {
+            param(
+              [Parameter(Mandatory = $true)][string]$LocalPath,
+              [Parameter(Mandatory = $true)][string]$RemotePath
+            )
+
+            $remoteDir = Split-Path $RemotePath -Parent
+            $bytes = [System.IO.File]::ReadAllBytes((Resolve-Path $LocalPath))
+            $payload = [Convert]::ToBase64String($bytes)
+            $remoteCommand = "powershell -NoProfile -Command ""`$payload = [Console]::In.ReadToEnd(); New-Item -ItemType Directory -Force -Path '$remoteDir' | Out-Null; [System.IO.File]::WriteAllBytes('$RemotePath', [Convert]::FromBase64String(`$payload))"""
+            $payload | ssh -i "$HOME\.ssh\id_ed25519" -p $env:SSH_PORT -o StrictHostKeyChecking=yes "$env:SSH_USER@$env:SSH_HOST" $remoteCommand
+          }
+
+          Copy-RemoteFile -LocalPath "dist\kvtc-release.zip" -RemotePath "$remoteDeployDir\kvtc-release.zip"
+          Copy-RemoteFile -LocalPath "scripts\iis\deploy.ps1" -RemotePath "$remoteDeployDir\deploy.ps1"
 
       - name: Run remote deployment
         shell: pwsh
