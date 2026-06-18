@@ -110,6 +110,24 @@ jobs:
           }
 
           $remoteDeployDir = Split-Path "${env:REMOTE_CONFIG_PATH}" -Parent
+          $sshOptions = @(
+            "-i", "$HOME\.ssh\id_ed25519",
+            "-p", $env:SSH_PORT,
+            "-o", "StrictHostKeyChecking=yes",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=30",
+            "-o", "ServerAliveInterval=15",
+            "-o", "ServerAliveCountMax=2"
+          )
+          $sftpOptions = @(
+            "-i", "$HOME\.ssh\id_ed25519",
+            "-P", $env:SSH_PORT,
+            "-o", "StrictHostKeyChecking=yes",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=30",
+            "-o", "ServerAliveInterval=15",
+            "-o", "ServerAliveCountMax=2"
+          )
 
           function ConvertTo-SftpPath {
             param([Parameter(Mandatory = $true)][string]$Path)
@@ -123,7 +141,7 @@ jobs:
           }
 
           $remoteCommand = "powershell -NoProfile -Command ""New-Item -ItemType Directory -Force -Path '$remoteDeployDir' | Out-Null"""
-          ssh -i "$HOME\.ssh\id_ed25519" -p $env:SSH_PORT -o StrictHostKeyChecking=yes "$env:SSH_USER@$env:SSH_HOST" $remoteCommand
+          ssh @sshOptions "$env:SSH_USER@$env:SSH_HOST" $remoteCommand
 
           $serverEnvPath = Join-Path $env:RUNNER_TEMP "kvtc-server.env"
           @(
@@ -144,7 +162,7 @@ jobs:
             "put `"$($serverEnvPath -replace "\\", "/")`" `"$remoteConfigPath`""
           ) | Set-Content -LiteralPath $batchFile -Encoding ASCII
 
-          sftp -i "$HOME\.ssh\id_ed25519" -P $env:SSH_PORT -o StrictHostKeyChecking=yes -b $batchFile "$env:SSH_USER@$env:SSH_HOST"
+          sftp @sftpOptions -b $batchFile "$env:SSH_USER@$env:SSH_HOST"
 
       - name: Run remote deployment
         shell: pwsh
@@ -162,6 +180,15 @@ jobs:
         run: |
           $remoteDeployDir = Split-Path "${env:CONFIG_PATH}" -Parent
           $releaseId = "${{ github.run_number }}-${{ github.run_attempt }}-${{ github.sha }}"
+          $sshOptions = @(
+            "-i", "$HOME\.ssh\id_ed25519",
+            "-p", $env:SSH_PORT,
+            "-o", "StrictHostKeyChecking=yes",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=30",
+            "-o", "ServerAliveInterval=15",
+            "-o", "ServerAliveCountMax=2"
+          )
           $cmd = @(
             "powershell -NoProfile -ExecutionPolicy Bypass -File '$remoteDeployDir\deploy.ps1'",
             "-ArtifactPath '$remoteDeployDir\kvtc-release.zip'",
@@ -175,4 +202,4 @@ jobs:
             "-KeepReleases $env:KEEP_RELEASES"
           ) -join " "
 
-          ssh -i "$HOME\.ssh\id_ed25519" -p $env:SSH_PORT -o StrictHostKeyChecking=yes "$env:SSH_USER@$env:SSH_HOST" $cmd
+          ssh @sshOptions "$env:SSH_USER@$env:SSH_HOST" $cmd
