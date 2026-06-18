@@ -473,7 +473,7 @@ try {
     & $venvPython manage.py migrate --noinput
 
     Write-Step "Collecting static files"
-    & $venvPython manage.py collectstatic --noinput --no-post-process
+    & $venvPython manage.py collectstatic --noinput
 }
 finally {
     Pop-Location
