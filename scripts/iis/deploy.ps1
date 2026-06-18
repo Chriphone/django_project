@@ -517,7 +517,7 @@ Write-Step "Starting app pool and site"
 Start-Sleep -Seconds 3
 
 Write-Step "Health check"
-$response = Invoke-WebRequest -Uri "http://127.0.0.1:$HttpPort/" -Headers @{ Host = $HostHeader } -UseBasicParsing -TimeoutSec 30
+$response = Invoke-WebRequest -Uri "http://127.0.0.1:$HttpPort/" -Headers @{ Host = $HostHeader; "X-Forwarded-Proto" = "https" } -UseBasicParsing -TimeoutSec 30
 Write-Host "Health check status: $($response.StatusCode)"
 
 Write-Step "Static file health check"

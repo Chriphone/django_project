@@ -1,6 +1,40 @@
 from django.utils.deprecation import MiddlewareMixin
 from django.urls import reverse
 from django.shortcuts import redirect
+from django.conf import settings
+from django.http import HttpResponsePermanentRedirect
+
+
+class HttpsRedirectMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if self.should_redirect(request):
+            redirect_host = getattr(settings, "HTTPS_REDIRECT_HOST", "") or request.get_host()
+            return HttpResponsePermanentRedirect(f"https://{redirect_host}{request.get_full_path()}")
+
+        return self.get_response(request)
+
+    def should_redirect(self, request):
+        if not getattr(settings, "HTTPS_REDIRECT_ENABLED", False):
+            return False
+
+        if request.is_secure():
+            return False
+
+        forwarded_proto = request.META.get("HTTP_X_FORWARDED_PROTO", "").split(",")[0].strip().lower()
+        if forwarded_proto == "https":
+            return False
+
+        if request.META.get("HTTPS", "").lower() in ("on", "1"):
+            return False
+
+        redirect_host = getattr(settings, "HTTPS_REDIRECT_HOST", "")
+        if redirect_host and request.get_host().lower() == redirect_host.lower():
+            return False
+
+        return True
 
 
 class LoginCheckMiddleWare(MiddlewareMixin):

@@ -55,6 +55,9 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
+HTTPS_REDIRECT_ENABLED = os.environ.get('DJANGO_HTTPS_REDIRECT', 'False').lower() == 'true'
+HTTPS_REDIRECT_HOST = os.environ.get('DJANGO_HTTPS_REDIRECT_HOST', '')
+
 
  
 # Application definition
@@ -76,6 +79,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'main_app.middleware.HttpsRedirectMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
