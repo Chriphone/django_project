@@ -115,6 +115,7 @@ jobs:
           REMOTE_CONFIG_PATH: ${{ vars.IIS_SERVER_CONFIG_PATH }}
           DATABASE_URL: ${{ secrets.IIS_DATABASE_URL }}
           HOST_HEADER: ${{ vars.IIS_HOST_HEADER }}
+          PUBLIC_HTTPS_PORT: ${{ vars.IIS_PUBLIC_HTTPS_PORT }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:DATABASE_URL)) {
             throw "IIS_DATABASE_URL secret is required."
@@ -154,12 +155,20 @@ jobs:
           $remoteCommand = "powershell -NoProfile -Command ""New-Item -ItemType Directory -Force -Path '$remoteDeployDir' | Out-Null"""
           ssh @sshOptions "$env:SSH_USER@$env:SSH_HOST" $remoteCommand
 
+          $csrfOrigins = @(
+            "http://$env:HOST_HEADER",
+            "https://$env:HOST_HEADER"
+          )
+          if (-not [string]::IsNullOrWhiteSpace($env:PUBLIC_HTTPS_PORT) -and $env:PUBLIC_HTTPS_PORT -ne "443") {
+            $csrfOrigins += ("https://{0}:{1}" -f $env:HOST_HEADER, $env:PUBLIC_HTTPS_PORT)
+          }
+
           $serverEnvPath = Join-Path $env:RUNNER_TEMP "kvtc-server.env"
           @(
             "DATABASE_URL=$env:DATABASE_URL",
             "DJANGO_DEBUG=False",
             "DJANGO_ALLOWED_HOSTS=$env:HOST_HEADER,localhost,127.0.0.1",
-            "DJANGO_CSRF_TRUSTED_ORIGINS=http://$env:HOST_HEADER,https://$env:HOST_HEADER",
+            "DJANGO_CSRF_TRUSTED_ORIGINS=$($csrfOrigins -join ',')",
             "EMAIL_ADDRESS=",
             "EMAIL_PASSWORD="
           ) | Set-Content -LiteralPath $serverEnvPath -Encoding UTF8
@@ -216,3 +225,32 @@ jobs:
           $cmd = "powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand $encodedCommand"
 
           ssh @sshOptions "$env:SSH_USER@$env:SSH_HOST" $cmd
+
+      - name: Validate public site
+        shell: pwsh
+        env:
+          HOST_HEADER: ${{ vars.IIS_HOST_HEADER }}
+          PUBLIC_HTTPS_PORT: ${{ vars.IIS_PUBLIC_HTTPS_PORT }}
+        run: |
+          $httpsPort = $env:PUBLIC_HTTPS_PORT
+          if ([string]::IsNullOrWhiteSpace($httpsPort)) {
+            $httpsPort = "443"
+          }
+
+          $httpsBaseUrl = if ($httpsPort -eq "443") {
+            "https://$env:HOST_HEADER"
+          } else {
+            "https://{0}:{1}" -f $env:HOST_HEADER, $httpsPort
+          }
+
+          $checks = @(
+            "http://$env:HOST_HEADER/",
+            "$httpsBaseUrl/",
+            "$httpsBaseUrl/login_page",
+            "$httpsBaseUrl/static/css/style.css"
+          )
+
+          foreach ($uri in $checks) {
+            $response = Invoke-WebRequest -Uri $uri -UseBasicParsing -TimeoutSec 30
+            Write-Host "$uri -> $($response.StatusCode)"
+          }

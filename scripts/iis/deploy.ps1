@@ -333,6 +333,7 @@ function Ensure-IisSite {
     param([string]$PhysicalPath)
 
     $appCmd = Join-Path $env:windir "system32\inetsrv\appcmd.exe"
+    $httpBinding = "*:$HttpPort`:$HostHeader"
 
     $pool = & $appCmd list apppool /name:$AppPoolName
     if ($LASTEXITCODE -ne 0 -or -not $pool) {
@@ -343,11 +344,18 @@ function Ensure-IisSite {
 
     $site = & $appCmd list site /name:$SiteName
     if ($LASTEXITCODE -ne 0 -or -not $site) {
-        & $appCmd add site /name:$SiteName /bindings:"http/*:$HttpPort`:$HostHeader" /physicalPath:$PhysicalPath
+        & $appCmd add site /name:$SiteName /bindings:"http/$httpBinding" /physicalPath:$PhysicalPath
     }
     else {
         & $appCmd set vdir "$SiteName/" /physicalPath:$PhysicalPath
-        & $appCmd set site $SiteName /bindings:"http/*:$HttpPort`:$HostHeader"
+        $bindings = (& $appCmd list site /name:$SiteName /text:bindings) | Out-String
+        if ($bindings -notmatch [regex]::Escape($httpBinding)) {
+            $output = & $appCmd set site $SiteName "/+bindings.[protocol='http',bindingInformation='$httpBinding']" 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                $output | Write-Host
+                throw "Failed to add HTTP binding $httpBinding to site $SiteName."
+            }
+        }
     }
 
     & $appCmd set app "$SiteName/" /applicationPool:$AppPoolName
