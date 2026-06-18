@@ -1,5 +1,6 @@
 import json
 import requests
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 #from django.contrib.auth.forms importUserCreationForm
@@ -34,7 +35,11 @@ def login_page(request):
             return redirect(reverse("staff_home"))
         else:
             return redirect(reverse("student_home"))
-    return render(request, 'main_app/login.html')
+    return render(
+        request,
+        'main_app/login.html',
+        {'recaptcha_public_key': settings.RECAPTCHA_PUBLIC_KEY},
+    )
 def register_page(request):
     return render(request,'main_app/homepage/register.html')
 

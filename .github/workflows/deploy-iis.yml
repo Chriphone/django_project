@@ -16,7 +16,7 @@ jobs:
     name: Build artifact
     runs-on: windows-latest
     env:
-      DJANGO_DEBUG: "True"
+      DJANGO_DEBUG: "False"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,kvtc.kmet.co.ke
       DJANGO_CSRF_TRUSTED_ORIGINS: http://kvtc.kmet.co.ke,https://kvtc.kmet.co.ke
       DATABASE_URL: sqlite:///ci.sqlite3
@@ -157,7 +157,7 @@ jobs:
           $serverEnvPath = Join-Path $env:RUNNER_TEMP "kvtc-server.env"
           @(
             "DATABASE_URL=$env:DATABASE_URL",
-            "DJANGO_DEBUG=True",
+            "DJANGO_DEBUG=False",
             "DJANGO_ALLOWED_HOSTS=$env:HOST_HEADER,localhost,127.0.0.1",
             "DJANGO_CSRF_TRUSTED_ORIGINS=http://$env:HOST_HEADER,https://$env:HOST_HEADER",
             "EMAIL_ADDRESS=",

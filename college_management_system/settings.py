@@ -24,8 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # settings.py
 
 
-#RECAPTCHA_PUBLIC_KEY = '6LcQg8QsAAAAAK-yWjQ2-Zcof-HG5tVdXKLf4Y5t'  # Starts with 6L...
-#RECAPTCHA_PRIVATE_KEY = '6LcQg8QsAAAAANdKdlvPny26cW7eW7c45KueSdVa'
+RECAPTCHA_PUBLIC_KEY = os.environ.get(
+    'RECAPTCHA_PUBLIC_KEY',
+    '6LcQg8QsAAAAAK-yWjQ2-Zcof-HG5tVdXKLf4Y5t'
+)
+RECAPTCHA_PRIVATE_KEY = os.environ.get(
+    'RECAPTCHA_PRIVATE_KEY',
+    '6LcQg8QsAAAAANdKdlvPny26cW7eW7c45KueSdVa'
+)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
@@ -34,7 +40,7 @@ SECRET_KEY = os.environ.get(
 )  # Consider using your secret key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
 
 # ALLOWED_HOSTS = ['smswithdjango.herokuapp.com']
 ALLOWED_HOSTS = [
