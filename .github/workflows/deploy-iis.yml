@@ -53,9 +53,13 @@ jobs:
           if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
           New-Item -ItemType Directory -Force -Path $staging | Out-Null
 
-          robocopy . $staging /E /XD .git .venv venv env docs media dist static __pycache__ /XF "*.pyc" | Out-Null
+          robocopy . $staging /E /XD .git .venv venv env docs media dist __pycache__ /XF "*.pyc" | Out-Null
           if ($LASTEXITCODE -gt 7) { exit $LASTEXITCODE }
           $global:LASTEXITCODE = 0
+          $rootStatic = Join-Path $staging "static"
+          if (Test-Path $rootStatic) {
+            Remove-Item -LiteralPath $rootStatic -Recurse -Force
+          }
 
           Compress-Archive -Path (Join-Path $staging "*") -DestinationPath $artifact -Force
           New-Item -ItemType Directory -Force -Path dist | Out-Null
