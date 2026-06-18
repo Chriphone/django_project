@@ -250,14 +250,23 @@ jobs:
             "https://{0}:{1}" -f $env:HOST_HEADER, $httpsPort
           }
 
-          $httpResponse = Invoke-WebRequest -Uri "http://$env:HOST_HEADER/" -UseBasicParsing -TimeoutSec 30 -MaximumRedirection 0 -SkipHttpErrorCheck
-          if ($httpResponse.StatusCode -notin 301, 302, 308) {
-            throw "Expected HTTP redirect from http://$env:HOST_HEADER/, got $($httpResponse.StatusCode)."
+          $handler = [System.Net.Http.HttpClientHandler]::new()
+          $handler.AllowAutoRedirect = $false
+          $client = [System.Net.Http.HttpClient]::new($handler)
+          $client.Timeout = [TimeSpan]::FromSeconds(30)
+          $httpResponse = $client.GetAsync("http://$env:HOST_HEADER/").GetAwaiter().GetResult()
+          $httpStatus = [int]$httpResponse.StatusCode
+          $locationHeader = [string]$httpResponse.Headers.Location
+          $client.Dispose()
+          $handler.Dispose()
+
+          if ($httpStatus -notin 301, 302, 308) {
+            throw "Expected HTTP redirect from http://$env:HOST_HEADER/, got $httpStatus."
           }
-          if ($httpResponse.Headers.Location -notlike "$httpsBaseUrl/*") {
-            throw "Expected HTTP redirect to $httpsBaseUrl/, got $($httpResponse.Headers.Location)."
+          if ($locationHeader -notlike "$httpsBaseUrl/*") {
+            throw "Expected HTTP redirect to $httpsBaseUrl/, got $locationHeader."
           }
-          Write-Host "http://$env:HOST_HEADER/ -> $($httpResponse.StatusCode) $($httpResponse.Headers.Location)"
+          Write-Host "http://$env:HOST_HEADER/ -> $httpStatus $locationHeader"
 
           $checks = @(
             "$httpsBaseUrl/",
