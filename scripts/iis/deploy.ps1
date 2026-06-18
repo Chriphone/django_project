@@ -260,6 +260,18 @@ $($appSettings -join "`r`n")
   </appSettings>
   <system.webServer>
     <handlers>
+      <add name="KVTC Static Files"
+           path="static/*"
+           verb="GET,HEAD"
+           modules="StaticFileModule"
+           resourceType="File"
+           requireAccess="Read" />
+      <add name="KVTC Media Files"
+           path="media/*"
+           verb="GET,HEAD"
+           modules="StaticFileModule"
+           resourceType="File"
+           requireAccess="Read" />
       <add name="Python FastCGI"
            path="*"
            verb="*"
@@ -282,7 +294,7 @@ function Ensure-FastCgiRegistration {
     )
 
     $appCmd = Join-Path $env:windir "system32\inetsrv\appcmd.exe"
-    $config = & $appCmd list config /section:system.webServer/fastCgi
+    $config = (& $appCmd list config /section:system.webServer/fastCgi 2>&1) | Out-String
     if ($config -notmatch [regex]::Escape($VenvPython)) {
         $output = & $appCmd set config /section:system.webServer/fastCgi /+"[fullPath='$VenvPython',arguments='$WFastCgi']" /commit:apphost 2>&1
         if ($LASTEXITCODE -ne 0 -and (($output | Out-String) -notmatch "duplicate collection entry")) {
@@ -335,11 +347,15 @@ function Switch-CurrentRelease {
     $current = Join-Path $DeployRoot "current"
     $currentItem = Get-Item -LiteralPath $current -Force -ErrorAction SilentlyContinue
     if ($currentItem) {
-        if ($currentItem.PSIsContainer) {
+        if (($currentItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $currentItem.PSIsContainer) {
             cmd /c rmdir "$current" | Out-Null
         }
         else {
             Remove-Item -LiteralPath $current -Force
+        }
+
+        if (Test-Path -LiteralPath $current) {
+            throw "Failed to remove existing current release link: $current"
         }
     }
 
