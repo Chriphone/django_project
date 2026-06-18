@@ -196,8 +196,8 @@ jobs:
             "-o", "ServerAliveInterval=15",
             "-o", "ServerAliveCountMax=2"
           )
-          $cmd = @(
-            "powershell -NoProfile -ExecutionPolicy Bypass -File '$remoteDeployDir\deploy.ps1'",
+          $remoteScript = @(
+            "& '$remoteDeployDir\deploy.ps1'",
             "-ArtifactPath '$remoteDeployDir\kvtc-release.zip'",
             "-ReleaseId '$releaseId'",
             "-SiteName '$env:SITE_NAME'",
@@ -208,5 +208,7 @@ jobs:
             "-ConfigPath '$env:CONFIG_PATH'",
             "-KeepReleases $env:KEEP_RELEASES"
           ) -join " "
+          $encodedCommand = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($remoteScript))
+          $cmd = "powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand $encodedCommand"
 
           ssh @sshOptions "$env:SSH_USER@$env:SSH_HOST" $cmd
