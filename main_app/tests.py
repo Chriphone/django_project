@@ -8,6 +8,17 @@ class LoginPageRecaptchaTests(TestCase):
 
         self.assertContains(response, 'data-sitekey="test-public-recaptcha-key"')
 
+    @override_settings(
+        RECAPTCHA_ENABLED=False,
+        RECAPTCHA_PUBLIC_KEY="invalid-domain-recaptcha-key",
+    )
+    def test_login_page_can_disable_recaptcha_widget(self):
+        response = self.client.get("/login_page")
+
+        self.assertNotContains(response, "www.google.com/recaptcha/api.js")
+        self.assertNotContains(response, "g-recaptcha")
+        self.assertNotContains(response, "data-sitekey=")
+
 
 class ProductionStaticRenderingTests(TestCase):
     @override_settings(DEBUG=False, ALLOWED_HOSTS=["testserver"])

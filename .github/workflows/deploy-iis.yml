@@ -176,6 +176,7 @@ jobs:
             "DJANGO_CSRF_TRUSTED_ORIGINS=$($csrfOrigins -join ',')",
             "DJANGO_HTTPS_REDIRECT=True",
             "DJANGO_HTTPS_REDIRECT_HOST=$httpsRedirectHost",
+            "RECAPTCHA_ENABLED=False",
             "EMAIL_ADDRESS=",
             "EMAIL_PASSWORD="
           ) | Set-Content -LiteralPath $serverEnvPath -Encoding UTF8

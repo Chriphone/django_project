@@ -32,6 +32,7 @@ RECAPTCHA_PRIVATE_KEY = os.environ.get(
     'RECAPTCHA_PRIVATE_KEY',
     '6LcQg8QsAAAAANdKdlvPny26cW7eW7c45KueSdVa'
 )
+RECAPTCHA_ENABLED = os.environ.get('RECAPTCHA_ENABLED', 'True').lower() == 'true'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(

@@ -18,8 +18,10 @@
     <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
     <!-- Google Font: Source Sans Pro -->
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+    {% if recaptcha_enabled %}
     <!-- Google Recaptcha     -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {% endif %}
 </head>
 <h1><a href="{% url 'register_pages' %}" class="btn btn-primary py-4 px-lg-5 d-none d-lg-block">Join Nows<i class="fa fa-arrow-right ms-3"></i></a></h1>   
 <body class="hold-transition login-page">
@@ -61,10 +63,11 @@
                             </div>
                         </div>
                     </div>
+                    {% if recaptcha_enabled %}
                     <div class="input-group mb-3">
                         <div class="g-recaptcha" data-sitekey="{{ recaptcha_public_key }}"></div>
-
                     </div>
+                    {% endif %}
                     <div class="row">
                         <div class="col-8">
                             <div class="icheck-primary">

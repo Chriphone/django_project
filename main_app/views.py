@@ -38,7 +38,10 @@ def login_page(request):
     return render(
         request,
         'main_app/login.html',
-        {'recaptcha_public_key': settings.RECAPTCHA_PUBLIC_KEY},
+        {
+            'recaptcha_enabled': settings.RECAPTCHA_ENABLED,
+            'recaptcha_public_key': settings.RECAPTCHA_PUBLIC_KEY,
+        },
     )
 def register_page(request):
     return render(request,'main_app/homepage/register.html')
