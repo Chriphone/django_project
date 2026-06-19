@@ -12,7 +12,6 @@ from .forms import RegisterForm
 
 
 
-from .EmailBackend import EmailBackend
 from .models import Attendance, CustomUser, Session, Student, Subject
 
 #Create your views here.
@@ -73,12 +72,7 @@ def doLogin(request, **kwargs):
     email = request.POST.get('email')
     password = request.POST.get('password')
     
-    # Authenticate the user directly
-    user = EmailBackend.authenticate(
-        request, 
-        username=email, 
-        password=password
-    )
+    user = authenticate(request, username=email, password=password)
     
     if user is not None:
         login(request, user)
