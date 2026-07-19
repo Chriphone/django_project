@@ -1,0 +1,160 @@
+{% extends 'main_app/homepage/base.html'%}
+{% load static %}
+    <body>
+{% block content %}
+<!--start sideways-->
+
+<div style="position:fixed; left:0; top:50%; transform:translateY(-50%); z-index:9999; background:orange; padding:10px; border-radius:0 10px 10px 0; box-shadow:0 0 10px rgba(0,0,0,0.2);">
+
+    <div class="d-flex flex-column align-items-start small">
+        <a href="{% url 'login_page' %}" class="login-btn mb-2 text-decoration-none" style="color:white;">
+            <span>Login</span>
+        </a>
+
+        <a href="{% url 'register_pages' %}" class="mb-2 text-decoration-none" style="color:white;">
+            Register
+        </a>
+    </div>
+
+    <div class="d-flex mt-2">
+        <a class="btn p-0" href="https://www.facebook.com/KMETVocational" style="color:white;">
+            <i class="fab fa-facebook-f"></i>
+        </a>
+    </div>
+
+</div>
+
+<!--endsideways-->
+
+
+        <!-- Spinner Start -->
+          <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">KTVTC</span>
+            </div>
+        </div>
+
+          
+       
+        <!--END-->
+
+
+     
+
+        <!-- Modal Search Start -->
+        <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content rounded-0">
+                    
+                </div>
+            </div>
+        </div>
+        <!-- Modal Search End -->
+
+
+        <!-- Carousel Start -->
+        <div class="header-carousel owl-carousel overflow-hidden bg-dark">
+            <div class="header-carousel-item hero-section">
+                <div class="hero-bg-half-1"></div>
+                <div class="carousel-caption">
+                    <div class="container">
+                        <div class="row g-4 align-items-center">
+                            <div class="col-lg-7 animated fadeInLeft">
+                                <div class="text-sm-center text-md-start">
+                                    <h4 class="text-primary text-uppercase fw-bold mb-4"></h4>
+                                    <h1 class="display-1 text-white mb-4">FASHION DESIGN  DEPARTMENT</h1>
+        
+                                    <div class="d-flex justify-content-center justify-content-md-start flex-shrink-0 mb-4">
+                                        <a class="btn btn-dark py-3 px-4 px-md-5 me-2" href="{% url 'register_pages' %}"><i class="fas fa-play-circle me-2"></i> <span>jOIN US</span></a>
+                                        <a class="btn btn-primary py-3 px-4 px-md-5 ms-2" href="{% url 'login_page' %}"><span>Login</span></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header-carousel-item hero-section">
+                <div class="hero-bg-half-2"></div>
+                <div class="carousel-caption">
+                    <div class="container">
+                        <div class="row g-4 align-items-center">
+                            <div class="col-lg-7 animated fadeInLeft">
+                                <div class="text-sm-center text-md-start">
+                                    <h4 class="text-primary text-uppercase fw-bold mb-4"></h4>
+                                    <h1 class="display-2 text-white mb-4">HOSPITALITY DEPARTMENT</h1>
+                                    
+                                    <div class="d-flex justify-content-center justify-content-md-start flex-shrink-0 mb-4">
+                                        <a class="btn btn-dark py-3 px-4 px-md-5 me-2" href="{% url 'register_pages' %}"><i class="fas fa-play-circle me-2"></i> <span>REGISTER</span></a>
+                                        <a class="btn btn-primary py-3 px-4 px-md-5 ms-2" href="{% url 'login_page' %}"><span>Login</span></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Carousel End -->
+         <!-- Features Start -->
+        <div class="container-fluid feature bg-light py-5">
+            <div class="container py-5">
+                <div class="text-center mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s" style="max-width: 800px;">
+                    <h4 class="text-primary"> Why choose us?</h4>
+                    <h1 class="display-4 mb-4">OUR COURSES</h1>
+                    
+                </div>
+                <div class="feature-carousel owl-carousel">
+                    <div class="feature-item wow fadeInUp" data-wow-delay="0.2s">
+                        <div class="feature-img">
+                            <img class="img-fluid" src="{% static 'img/td.jpg' %}" alt="">
+                        </div>
+                        <div class="feature-content p-4">
+                            <h4 class="mb-3">FASHION DESIGN DEPARTMENT</h4>
+                            
+                            <a href="#" class="btn btn-primary py-2 px-4"> <span>Read More</span></a>
+                        </div>
+                    </div>
+                    <div class="feature-item wow fadeInUp" data-wow-delay="0.4s">
+                        <div class="feature-img">
+                            <img class="img-fluid" src="{% static 'img/ict2.jpg' %}" alt="">
+                        </div>
+                        <div class="feature-content p-4">
+                            <h4 class="mb-3">INFORMATION COMUNICATION AND TECHNOLOGY</h4>
+                            <a href="{% url 'cdacccourse' %}" class="btn btn-primary py-2 px-4"> <span>Read More</span></a>
+                        </div>
+                    </div>
+                    <div class="feature-item wow fadeInUp" data-wow-delay="0.6s">
+                        <div class="feature-img">
+                            <img class="img-fluid" src="{% static 'img/fb2.JPEG' %}" alt="">
+                            
+                        </div>
+                        <div class="feature-content p-4">
+                            <h4 class="mb-3">HOSPITALITY  DEPARTMENT</h4>
+                            
+                            <a href="{% url 'cdacccourse' %}" class="btn btn-primary py-2 px-4"> <span>Read More</span></a>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-img">
+                            <img class="img-fluid" src="{% static 'img/hair1.jpg' %}" alt="">
+                        </div>
+                        <div class="feature-content p-4">
+                            <h4 class="mb-3">COSMETOLOGY DEPARTMENT</h4>
+                            <a href="{% url 'cdacccourse' %}" class="btn btn-primary py-2 px-4"> <span>Read More</span></a>
+                            
+                            
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Features End -->
+
+ <br/>
+ <br/>
+ <br/>
+       
+
+</html>
+{% endblock content %}

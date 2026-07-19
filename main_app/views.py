@@ -16,7 +16,29 @@ from .models import Attendance, CustomUser, Session, Student, Subject
 
 #Create your views here.
 def home(request):
-    return render(request, 'main_app/homepage/home_page.html', {})
+    return render(request, 'main_app/homepage/index.html', {})
+
+
+def courses(request):
+    return render(request, 'main_app/homepage/index.html', {})
+
+
+def cdacc(request):
+    return render(request, 'main_app/homepage/cdacccourses.html', {})
+
+
+def nita(request):
+    return render(request, 'main_app/homepage/nitacourses.html', {})
+
+
+def short(request):
+    return render(request, 'main_app/homepage/shortcourse.html', {})
+
+
+def coursedetail(request):
+    return render(request, 'main_app/homepage/coursedetail/course detail.html', {})
+
+
 def homes(request):
     return render(request, 'main_app/registration/registration.html', {})
 

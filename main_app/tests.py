@@ -72,6 +72,14 @@ class ProductionStaticRenderingTests(TestCase):
         response = self.client.get("/")
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "OUR COURSES")
+
+    @override_settings(DEBUG=False, ALLOWED_HOSTS=["testserver"])
+    def test_new_public_course_pages_render(self):
+        for path in ("/courses", "/cdacccourse", "/nitacourses", "/coursedetail"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
 
 
 class HttpsRedirectTests(TestCase):

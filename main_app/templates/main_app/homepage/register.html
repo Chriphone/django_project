@@ -1,4 +1,7 @@
+{% extends 'main_app/homepage/base.html'%}
 {% load static %}
+
+{% block content %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,6 +31,40 @@
                             <label>Email</label>
                             {{ form.email }}
                         </div>
+                         <div class="mb-3">
+                            <div class="combobox-wrapper">
+        <!-- Label linked to the input via 'for' attribute -->
+        <label class="combobox-label" for="course-select">Select or Type a Program:</label>
+        
+        <!-- The Input field that acts as the combo box trigger -->
+        <input 
+            type="text" 
+            id="course-select" 
+            class="combobox-input" 
+            list="courses-list" 
+            placeholder="e.g., Choral Conducting"
+        >
+
+        <!-- The Datalist container holding all searchable dropdown choices -->
+        <datalist id="courses-list">
+            <option value="ict level4"></option>
+             <option value="ict level5"></option>
+             <option value="ict level5"></option>
+            <option value="Diploma in Cyber Security"></option>
+            <option value="social work level 5"></option>
+            <option value="social work level 6"></option>
+            <option value="food and beverage production (culinary)level 3"></option>
+            <option value="food and beverage production (culinary)level 4"></option>
+            <option value="food and beverage production (culinary)level 5"></option>
+            <option value="food and beverage production (culinary)level 6"></option>
+            <option value="cosmetology level 3"></option>
+            <option value="cosmetology level 4"></option>
+            <option value="cosmetology level 5"></option>
+            <option value="cosmetology level 6"></option>
+        </datalist>
+    </div>
+                            
+                        </div>
 
                         <div class="mb-3">
                             <label>Password</label>
@@ -44,12 +81,12 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    Already have an account? <a href="{% url 'login' %}">Login</a>
+                    Already have an account? <a href="{% url 'login_page' %}">Login</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
+{% endblock content%}
 </body>
 </html>

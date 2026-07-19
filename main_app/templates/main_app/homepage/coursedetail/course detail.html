@@ -1,0 +1,79 @@
+{% extends 'main_app/homepage/base.html'%}
+{% load static %}
+{% block content %}
+</head>
+<body>
+<div class="course-container">
+    
+    <h1>CDACC COURSES  REQUIREMENT</h1>
+
+    <!-- Part I -->
+    <h2>Part I - When to Join</h2>
+    <table class="info-table">
+        <tr>
+            <th>Intake Period</th>
+            <td class="highlight-text">Any time</td>
+        </tr>
+    </table>
+
+    <!-- Part II -->
+    <h2>Part II - Requirements</h2>
+    <table class="info-table">
+        <tr>
+            <th>Academic & Technical</th>
+            <td>
+                <ul class="requirements-list">
+                    <li>LEVEL4 D-</li>
+                     <li>LEVEL5 D+/D</li>
+                     <li>LEVEL6 </li>
+                      <strong>ALL NITA COURSES ARE OPEN TO ALL</strong><br>
+                    <li>(Proof of kcse or certificate from an equivalent body)</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <th>Added Advantages</th>
+            
+        </tr>
+    </table>
+
+    <!-- Part III -->
+    <h2>Part III - Approximate Fees & Projected Study Schedule</h2>
+    <table class="info-table">
+        <tr>
+            <th>Duration</th>
+            <td>3 Months</td>
+        </tr>
+        <tr>
+            <th>Cost (in KES)</th>
+            <td class="highlight-text">Please consult the finance office for current base rates.* **</td>
+        </tr>
+    </table>
+    <div class="footnote">* This excludes Industrial Attachment / Industrial-Based Learning.</div>
+    <div class="footnote">** The KMET TECHNICAL AND VOCATIONAL TRAINING COLLEGE reserves the right to implement fees changes approved by the Ministr Council without prior notice.</div>
+
+   
+    </table>
+
+    <!-- Part V -->
+    <h2>Part V - Next Steps</h2>
+    
+    <div class="action-box">
+        <strong>Interested in the Programme?</strong><br>
+        If you are interested in this programme, please start by <a href="{% url 'register_pages' %}">creating an account with us</a> or <a href="{% url 'login_page' %}">signing in</a> if your account is already created, in order to apply.
+    </div>
+
+    <div class="search-box">
+         <strong>Not Interested in this Programme?</strong> <strong>All fees must be deposited into college account:</strong>
+         KENYA COMMERCIAL BANK<strong> ACCOUNT Name:</strong>KMET VOCATIONAL TRAINING CENTRE KISUMU UNITED MALL BRANCH
+        ACCOUNT NO:<strong>1260687961</strong>  Personal cheque are<strong>NOT</strong> accepted
+    <strong>Fees  once paid is not refundable</strong>
+<strong>LIPA NA MPESA</strong> 
+PAYBILL NUMBER:<strong>4073079</strong> ACCOUNT NAME:<strong>STUDENT Name</strong> 
+FOR MOR INFORMATION CALL :<strong>0711659371</strong>  </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock content %}

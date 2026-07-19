@@ -15,4 +15,5 @@ admin.site.register(Course)
 admin.site.register(Subject)
 admin.site.register(Session)
 admin.site.register(carousel)
+admin.site.register(department)
 

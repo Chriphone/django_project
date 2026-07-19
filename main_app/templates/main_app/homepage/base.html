@@ -1,0 +1,79 @@
+ {% load static %}
+ <!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <title>KTVTC</title>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <meta content="" name="keywords">
+        <meta content="" name="description">
+
+        <!-- Google Web Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Teko:wght@300..700&display=swap" rel="stylesheet">
+
+        <!-- Icon Font Stylesheet -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+        <!-- Libraries Stylesheet -->
+        <link rel="stylesheet" href="{% static 'lib/animate/animate.min.css' %}">
+    <link rel="stylesheet" href="{% static 'lib/owlcarousel/assets/owl.carousel.min.css'%}">
+    <!-- Customized Bootstrap Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%}">
+    <!-- Template Stylesheet -->
+   
+    <link rel="stylesheet" href="{% static 'css/style.css'%}">
+    </head>
+    <body>
+{% include "main_app/homepage/navbar.html" %}
+{% block content %}
+
+
+{% endblock content %}
+     <!-- Copyright Start -->
+        <div class="container-fluid copyright py-4">
+            <div class="container">
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-6 text-center text-md-start mb-md-0">
+                        <span class="text-body"><a href="{% url 'home' %}" class="border-bottom text-white"><i class="fas fa-copyright text-light me-2"></i>ktvtc</a>, All right reserved.</span>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end text-body">
+                        KMET Technical and Vocational College
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Copyright End -->
+
+
+        <!-- Back to Top -->
+        <div class="back-to-top">
+            <a href="{% url 'home' %}" class="btn"><i class="fa fa-arrow-up"></i></a>  
+        </div> 
+
+        <!--stat-->
+        <!-- Back to Top -->
+    <a href="{% url 'home' %}" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js'%}"></script>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'lib/wow/wow.min.js'%}"></script>
+    <script src="{% static 'lib/easing/easing.min.js'%}"></script>
+    <script src="{% static 'lib/waypoints/waypoints.min.js'%}"></script>
+    <script src="{% static 'lib/owlcarousel/owl.carousel.min.js'%}"></script>
+    
+    
+    
+
+    <!-- Template Javascript -->
+      <!-- Template Javascript -->
+    <script src="{% static 'js/main.js'%}"></script>
+    </body>
+</html>

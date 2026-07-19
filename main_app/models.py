@@ -6,10 +6,21 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class carousel(models.Model):
-    slider = models.ImageField()
+    carousel_slider = models.ImageField()
     title = models.TextField()
+    descriptiom = models.TextField()
+
     def __str__(self):
-        return self.slider + ", " + self.title
+        return self.title
+
+
+class department(models.Model):
+    carousel_slider = models.ImageField()
+    title = models.TextField()
+    descriptiom = models.TextField()
+
+    def __str__(self):
+        return self.title
         
 
 
