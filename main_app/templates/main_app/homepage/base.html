@@ -26,6 +26,7 @@
     <!-- Template Stylesheet -->
    
     <link rel="stylesheet" href="{% static 'css/style.css'%}">
+    {% block extra_css %}{% endblock extra_css %}
     </head>
     <body>
 {% include "main_app/homepage/navbar.html" %}

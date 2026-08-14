@@ -1,0 +1,98 @@
+.fee-structure {
+  background: #f4f6f9;
+  color: #333;
+  padding: 32px 16px;
+}
+
+.fee-structure__container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.fee-structure .header {
+  text-align: center;
+  border-bottom: 3px double #1e3a8a;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+.fee-structure .header h1 {
+  color: #1e3a8a;
+  font-size: 1.8rem;
+  text-transform: uppercase;
+}
+
+.fee-structure .header p {
+  margin-bottom: 4px;
+  color: #555;
+}
+
+.fee-structure .section-title {
+  margin-top: 30px;
+  padding: 12px;
+  border-radius: 6px 6px 0 0;
+  background: #1e3a8a;
+  color: #fff;
+  text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.fee-structure .table-responsive {
+  overflow-x: auto;
+  margin-bottom: 30px;
+  border: 1px solid #e2e8f0;
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
+}
+
+.fee-structure table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.fee-structure th,
+.fee-structure td {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  text-align: left;
+}
+
+.fee-structure th {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.fee-structure .text-center { text-align: center; }
+.fee-structure .text-right { text-align: right; }
+
+.fee-structure td.course-title {
+  width: 25%;
+  background: #f8fafc;
+  color: #1e3a8a;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.fee-structure tbody tr:hover { background: #f1f5f9; }
+
+.fee-structure .currency::before {
+  content: "KSh ";
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .fee-structure { padding: 16px 8px; }
+  .fee-structure__container { padding: 15px; }
+  .fee-structure .header h1 { font-size: 1.3rem; }
+  .fee-structure .section-title { font-size: 0.95rem; }
+}

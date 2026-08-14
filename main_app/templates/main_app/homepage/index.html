@@ -54,6 +54,29 @@
 
         <!-- Carousel Start -->
         <div class="header-carousel owl-carousel overflow-hidden bg-dark">
+            {% if carousel_slides %}
+            {% for slide in carousel_slides %}
+            <div class="header-carousel-item hero-section">
+                <div class="carousel-db-image" style="background-image: url('{{ slide.carousel_slider.url }}');"></div>
+                <div class="carousel-caption">
+                    <div class="container">
+                        <div class="row g-4 align-items-center">
+                            <div class="col-lg-7 animated fadeInLeft">
+                                <div class="text-sm-center text-md-start">
+                                    <h1 class="display-2 text-white mb-4">{{ slide.title }}</h1>
+                                    {% if slide.description %}<p class="fs-5 text-white mb-4">{{ slide.description }}</p>{% endif %}
+                                    <div class="d-flex justify-content-center justify-content-md-start flex-shrink-0 mb-4">
+                                        <a class="btn btn-dark py-3 px-4 px-md-5 me-2" href="{% url 'register_pages' %}">Join Us</a>
+                                        <a class="btn btn-primary py-3 px-4 px-md-5 ms-2" href="{% url 'login_page' %}">Login</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
             <div class="header-carousel-item hero-section">
                 <div class="hero-bg-half-1"></div>
                 <div class="carousel-caption">
@@ -94,6 +117,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
         
         <!-- Carousel End -->

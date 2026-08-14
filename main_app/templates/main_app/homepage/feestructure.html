@@ -1,0 +1,264 @@
+
+{% extends 'main_app/homepage/base.html'%}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/feestructure.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+  <main class="fee-structure">
+  <div class="fee-structure__container">
+    <!-- College Header -->
+    <div class="header">
+      <h1>KMET Technical and Vocational Training College</h1>
+      <p>Along Kondele – Nyawita Bypass Kisumu | P.O. Box 6805-40103</p>
+      <p>Email: info@kmet.co.ke | Web: www.kmet.co.ke | TEL: +254 711659371</p>
+    </div>
+
+    <!-- TABLE 1: TVET CDACC COURSES -->
+    <div class="section-title">Approved TVET CDACC Courses</div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Courses</th>
+            <th>Levels</th>
+            <th class="text-center">Course Duration</th>
+            <th class="text-right">Tuition Fee / Module</th>
+            <th class="text-right">Material Fee / Module</th>
+            <th class="text-right">Assessment Fee / Module</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- ICT TECHNICIAN -->
+          <tr>
+            <td class="course-title" rowspan="3">ICT TECHNICIAN</td>
+            <td>LEVEL 4</td>
+            <td class="text-center">2 Modules</td>
+            <td class="text-right currency">16,000</td>
+            <td class="text-right currency">1,500.00</td>
+            <td class="text-right currency">3,000</td>
+          </tr>
+          <tr>
+            <td>LEVEL 5</td>
+            <td class="text-center">4 Modules</td>
+            <td class="text-right currency">16,000</td>
+            <td class="text-right currency">1,500.00</td>
+            <td class="text-right currency">4,500</td>
+          </tr>
+          <tr>
+            <td>LEVEL 6</td>
+            <td class="text-center">6 Modules</td>
+            <td class="text-right currency">16,000</td>
+            <td class="text-right currency">2,000.00</td>
+            <td class="text-right currency">4,500</td>
+          </tr>
+
+          <!-- SOCIAL WORK -->
+          <tr>
+            <td class="course-title" rowspan="2">SOCIAL WORK</td>
+            <td>LEVEL 5</td>
+            <td class="text-center">3 Modules</td>
+            <td class="text-right currency">15,000</td>
+            <td class="text-right currency">1,000.00</td>
+            <td class="text-right currency">4,500</td>
+          </tr>
+          <tr>
+            <td>LEVEL 6</td>
+            <td class="text-center">5 Modules</td>
+            <td class="text-right currency">15,000</td>
+            <td class="text-right currency">1,500.00</td>
+            <td class="text-right currency">5,500</td>
+          </tr>
+
+          <!-- FASHION DESIGN -->
+          <tr>
+            <td class="course-title" rowspan="4">FASHION DESIGN</td>
+            <td>LEVEL 3</td>
+            <td class="text-center">1 Modules</td>
+            <td class="text-right currency">15,000</td>
+            <td class="text-right currency">1,500.00</td>
+            <td class="text-right currency">3,000</td>
+          </tr>
+          <tr>
+            <td>LEVEL 4</td>
+            <td class="text-center">2 Modules</td>
+            <td class="text-right currency">15,000</td>
+            <td class="text-right currency">2,000.00</td>
+            <td class="text-right currency">3,000</td>
+          </tr>
+          <tr>
+            <td>LEVEL 5</td>
+            <td class="text-center">4 Modules</td>
+            <td class="text-right currency">15,500</td>
+            <td class="text-right currency">2,500.00</td>
+            <td class="text-right currency">6,500</td>
+          </tr>
+          <tr>
+            <td>LEVEL 6</td>
+            <td class="text-center">7 Modules</td>
+            <td class="text-right currency">16,000</td>
+            <td class="text-right currency">2,000.00</td>
+            <td class="text-right currency">4,500</td>
+          </tr>
+
+          <!-- FOOD AND BEVERAGE PRODUCTION -->
+          <tr>
+            <td class="course-title" rowspan="4">FOOD AND BEVERAGE PRODUCTION<br><small>(CULINARY ARTS)</small></td>
+            <td>LEVEL 3</td>
+            <td class="text-center">1 Modules</td>
+            <td class="text-right currency">15,000</td>
+            <td class="text-right currency">3,000.00</td>
+            <td class="text-right currency">3,000</td>
+          </tr>
+          <tr>
+            <td>LEVEL 4</td>
+            <td class="text-center">2 Modules</td>
+            <td class="text-right currency">15,400</td>
+            <td class="text-right currency">3,000.00</td>
+            <td class="text-right currency">4,500</td>
+          </tr>
+          <tr>
+            <td>LEVEL 5</td>
+            <td class="text-center">5 Modules</td>
+            <td class="text-right currency">15,500</td>
+            <td class="text-right currency">3,500.00</td>
+            <td class="text-right currency">4,500</td>
+          </tr>
+          <tr>
+            <td>LEVEL 6</td>
+            <td class="text-center">7 Modules</td>
+            <td class="text-right currency">16,000</td>
+            <td class="text-right currency">3,500.00</td>
+            <td class="text-right currency">5,500</td>
+          </tr>
+
+          <!-- FOOD & BEVERAGE SALES & SERVICE -->
+          <tr>
+            <td class="course-title" rowspan="4">FOOD & BEVERAGE SALES & SERVICE</td>
+            <td>LEVEL 3</td>
+            <td class="text-center">1 Modules</td>
+            <td class="text-right currency">15,000</td>
+            <td class="text-right currency">3,000.00</td>
+            <td class="text-right currency">3,000</td>
+          </tr>
+          <tr>
+            <td>LEVEL 4</td>
+            <td class="text-center">2 Modules</td>
+            <td class="text-right currency">15,000</td>
+            <td class="text-right currency">3,000.00</td>
+            <td class="text-right currency">3,000</td>
+          </tr>
+          <tr>
+            <td>LEVEL 5</td>
+            <td class="text-center">4 Modules</td>
+            <td class="text-right currency">15,400</td>
+            <td class="text-right currency">3,600.00</td>
+            <td class="text-right currency">4,500</td>
+          </tr>
+          <tr>
+            <td>LEVEL 6</td>
+            <td class="text-center">6 Modules</td>
+            <td class="text-right currency">15,400</td>
+            <td class="text-right currency">3,600.00</td>
+            <td class="text-right currency">6,500</td>
+          </tr>
+
+          <!-- COSMETOLOGY -->
+          <tr>
+            <td class="course-title" rowspan="4">COSMETOLOGY</td>
+            <td>LEVEL 3</td>
+            <td class="text-center">1 Modules</td>
+            <td class="text-right currency">15,000</td>
+            <td class="text-right currency">3,000.00</td>
+            <td class="text-right currency">3,000</td>
+          </tr>
+          <tr>
+            <td>LEVEL 4</td>
+            <td class="text-center">2 Modules</td>
+            <td class="text-right currency">15,400</td>
+            <td class="text-right currency">3,000.00</td>
+            <td class="text-right currency">4,000</td>
+          </tr>
+          <tr>
+            <td>LEVEL 5</td>
+            <td class="text-center">4 Modules</td>
+            <td class="text-right currency">15,400</td>
+            <td class="text-right currency">3,000.00</td>
+            <td class="text-right currency">5,000</td>
+          </tr>
+          <tr>
+            <td>LEVEL 6</td>
+            <td class="text-center">6 Modules</td>
+            <td class="text-right currency">16,400</td>
+            <td class="text-right currency">3,600.00</td>
+            <td class="text-right currency">6,000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TABLE 2: NITA COURSES -->
+    <div class="section-title">Vocational Training College - NITA Courses</div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Courses</th>
+            <th class="text-center">Grade</th>
+            <th class="text-center">Duration</th>
+            <th class="text-right">Tuition Fee / Term 1</th>
+            <th class="text-right">Examination Fee</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="course-title">FOOD & BEVERAGE PRODUCTION</td>
+            <td class="text-center">3</td>
+            <td class="text-center">6 MONTHS</td>
+            <td class="text-right currency">33,000.00</td>
+            <td class="text-right currency">9,500.00</td>
+          </tr>
+          <tr>
+            <td class="course-title">FOOD & BEVERAGE SERVICE</td>
+            <td class="text-center">3</td>
+            <td class="text-center">6 MONTHS</td>
+            <td class="text-right currency">30,000.00</td>
+            <td class="text-right currency">8,500.00</td>
+          </tr>
+          <tr>
+            <td class="course-title">COMPUTER OPERATOR</td>
+            <td class="text-center">3</td>
+            <td class="text-center">6 MONTHS</td>
+            <td class="text-right currency">25,000.00</td>
+            <td class="text-right currency">6,500.00</td>
+          </tr>
+          <tr>
+            <td class="course-title">TAILORING & DRESSMAKING</td>
+            <td class="text-center">3</td>
+            <td class="text-center">6 MONTHS</td>
+            <td class="text-right currency">25,000.00</td>
+            <td class="text-right currency">6,400.00</td>
+          </tr>
+          <tr>
+            <td class="course-title">BEAUTY THERAPY</td>
+            <td class="text-center">3</td>
+            <td class="text-center">6 MONTHS</td>
+            <td class="text-right currency">32,000.00</td>
+            <td class="text-right currency">7,150.00</td>
+          </tr>
+          <tr>
+            <td class="course-title">HAIRDRESSING</td>
+            <td class="text-center">3</td>
+            <td class="text-center">6 MONTHS</td>
+            <td class="text-right currency">32,000.00</td>
+            <td class="text-right currency">7,150.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  </main>
+{% endblock content %}

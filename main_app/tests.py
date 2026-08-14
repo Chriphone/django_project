@@ -1,6 +1,6 @@
 from django.test import TestCase, override_settings
 
-from .models import CustomUser, Student
+from .models import CustomUser, Student, carousel
 
 
 class LoginPageRecaptchaTests(TestCase):
@@ -80,6 +80,42 @@ class ProductionStaticRenderingTests(TestCase):
             with self.subTest(path=path):
                 response = self.client.get(path)
                 self.assertEqual(response.status_code, 200)
+
+    @override_settings(DEBUG=False, ALLOWED_HOSTS=["testserver"])
+    def test_home_page_renders_active_database_carousel_in_order(self):
+        carousel.objects.create(
+            title="Second slide",
+            description="Second description",
+            carousel_slider="carousel/second.jpg",
+            display_order=20,
+        )
+        carousel.objects.create(
+            title="First slide",
+            description="First description",
+            carousel_slider="carousel/first.jpg",
+            display_order=10,
+        )
+        carousel.objects.create(
+            title="Hidden slide",
+            carousel_slider="carousel/hidden.jpg",
+            is_active=False,
+        )
+
+        response = self.client.get("/")
+
+        self.assertContains(response, "First slide")
+        self.assertContains(response, "/media/carousel/first.jpg")
+        self.assertNotContains(response, "Hidden slide")
+        self.assertLess(
+            response.content.index(b"First slide"),
+            response.content.index(b"Second slide"),
+        )
+
+    def test_fee_structure_page_renders(self):
+        response = self.client.get("/feestructure")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Approved TVET CDACC Courses")
 
 
 class HttpsRedirectTests(TestCase):

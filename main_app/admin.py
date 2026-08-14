@@ -14,6 +14,12 @@ admin.site.register(Student)
 admin.site.register(Course)
 admin.site.register(Subject)
 admin.site.register(Session)
-admin.site.register(carousel)
 admin.site.register(department)
+
+
+@admin.register(carousel)
+class CarouselAdmin(admin.ModelAdmin):
+    list_display = ('title', 'display_order', 'is_active')
+    list_editable = ('display_order', 'is_active')
+    search_fields = ('title', 'description')
 

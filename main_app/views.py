@@ -12,15 +12,24 @@ from .forms import RegisterForm
 
 
 
-from .models import Attendance, CustomUser, Session, Student, Subject
+from .models import Attendance, CustomUser, Session, Student, Subject, carousel
 
 #Create your views here.
 def home(request):
-    return render(request, 'main_app/homepage/index.html', {})
+    carousel_slides = carousel.objects.filter(is_active=True)
+    return render(
+        request,
+        'main_app/homepage/index.html',
+        {'carousel_slides': carousel_slides},
+    )
 
 
 def courses(request):
-    return render(request, 'main_app/homepage/index.html', {})
+    return home(request)
+
+
+def feestructure(request):
+    return render(request, 'main_app/homepage/feestructure.html', {})
 
 
 def cdacc(request):

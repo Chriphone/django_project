@@ -6,18 +6,23 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class carousel(models.Model):
-    carousel_slider = models.ImageField()
+    carousel_slider = models.ImageField(upload_to="carousel/")
     title = models.TextField()
-    descriptiom = models.TextField()
+    description = models.TextField(blank=True)
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ("display_order", "id")
 
     def __str__(self):
         return self.title
 
 
 class department(models.Model):
-    carousel_slider = models.ImageField()
+    carousel_slider = models.ImageField(upload_to="departments/")
     title = models.TextField()
-    descriptiom = models.TextField()
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return self.title
